@@ -1,12 +1,70 @@
-import Link from "next/link"
-import { ArrowRight, Activity } from "lucide-react"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { ref, set } from "firebase/database";
+import Link from "next/link";
+import { ArrowRight, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// Import Firebase services from firebase-config.js
+import { auth, firestore, realtimeDb } from "@/firebase-config";
 
 export default function SignupPage() {
+  const router = useRouter();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSignup = async () => {
+    // Basic validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      // Create user in Firebase Authentication
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+      const fullName = `${firstName} ${lastName}`;
+
+      // Save user info to Firestore
+      await setDoc(doc(firestore, "users", user.uid), {
+        name: fullName,
+        email: email,
+      });
+
+      // Save user info to Realtime Database
+      await set(ref(realtimeDb, `users/${user.uid}`), {
+        name: fullName,
+        email: email,
+      });
+
+      // Redirect to home page after successful sign-up
+      router.push("/");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      setError(error.message);
+    }
+  };
+
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] py-12">
       <Card className="mx-auto max-w-md w-full border-2 border-primary/20">
@@ -16,7 +74,9 @@ export default function SignupPage() {
               <Activity className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            Create an account
+          </CardTitle>
           <CardDescription className="text-center">
             Enter your information to get started with HealthMate
           </CardDescription>
@@ -25,28 +85,55 @@ export default function SignupPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" placeholder="John" />
+              <Input
+                id="firstName"
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last name</Label>
-              <Input id="lastName" placeholder="Doe" />
+              <Input
+                id="lastName"
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="john.doe@example.com" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="john.doe@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input id="confirmPassword" type="password" />
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full bg-primary hover:bg-primary/90">
+          <Button onClick={handleSignup} className="w-full bg-primary hover:bg-primary/90">
             Create Account
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -59,6 +146,5 @@ export default function SignupPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-
