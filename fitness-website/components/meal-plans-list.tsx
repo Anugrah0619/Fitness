@@ -1,13 +1,33 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Clock, Utensils, BarChart, Bookmark } from "lucide-react"
+"use client";
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import Image from "next/image";
+import { Clock, Utensils, BarChart, Bookmark } from "lucide-react";
 
-// Mock data for meal plans
-const mealPlans = [
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+// Define the type for a meal plan
+export interface MealPlan {
+  id: number;
+  title: string;
+  category: string;
+  difficulty: string;
+  prepTime: string;
+  calories: string; // calories stored as string; will be parsed
+  image: string;
+  dietType: string;
+}
+
+type Props = {
+  searchTerm?: string;
+  dietTypes?: string[];
+  calorieRanges?: string[];
+  goals?: string[];
+};
+
+const mealPlans: MealPlan[] = [
   {
     id: 1,
     title: "High Protein Meal Plan",
@@ -68,13 +88,58 @@ const mealPlans = [
     image: "/placeholder.svg?height=400&width=600",
     dietType: "Paleo",
   },
-]
+];
 
-export default function MealPlansList() {
+export default function MealPlansList(props: Props = {}) {
+  // Destructure props with defaults
+  const { searchTerm = "", dietTypes = [], calorieRanges = [], goals = [] } = props;
+  let filteredPlans = mealPlans;
+
+  // 1. Partial search: filter by title
+  if (searchTerm.trim() !== "") {
+    const lowerSearch = searchTerm.toLowerCase();
+    filteredPlans = filteredPlans.filter((plan) =>
+      plan.title.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  // 2. Filter by diet type (if any selected)
+  if (dietTypes.length > 0) {
+    filteredPlans = filteredPlans.filter((plan) => dietTypes.includes(plan.dietType));
+  }
+
+  // 3. Filter by calorie range
+  if (calorieRanges.length > 0) {
+    filteredPlans = filteredPlans.filter((plan) => {
+      const cal = parseInt(plan.calories, 10);
+      return calorieRanges.some((range) => {
+        if (range === "Under 1500") {
+          return cal < 1500;
+        } else if (range === "1500-2000") {
+          return cal >= 1500 && cal <= 2000;
+        } else if (range === "2000-2500") {
+          return cal > 2000 && cal <= 2500;
+        } else if (range === "Over 2500") {
+          return cal > 2500;
+        }
+        return false;
+      });
+    });
+  }
+
+  // 4. Filter by goals (using category as goal here)
+  if (goals.length > 0) {
+    filteredPlans = filteredPlans.filter((plan) => goals.includes(plan.category));
+  }
+
+  if (filteredPlans.length === 0) {
+    return <p className="mt-4">No meal plans found.</p>;
+  }
+
   return (
     <div className="mt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mealPlans.map((plan) => (
+        {filteredPlans.map((plan) => (
           <Card key={plan.id} className="overflow-hidden h-full">
             <div className="relative h-48 w-full overflow-hidden group">
               <Image
@@ -128,6 +193,5 @@ export default function MealPlansList() {
         ))}
       </div>
     </div>
-  )
+  );
 }
-
