@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 // Import Firebase services from firebase-config.js
-import { auth, firestore, realtimeDb } from "@/firebase-config";
+import { auth, db, rtdb } from "@/firebase-config";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,13 +46,13 @@ export default function SignupPage() {
       const fullName = `${firstName} ${lastName}`;
 
       // Save user info to Firestore
-      await setDoc(doc(firestore, "users", user.uid), {
+      await setDoc(doc(db, "users", user.uid), {
         name: fullName,
         email: email,
       });
 
       // Save user info to Realtime Database
-      await set(ref(realtimeDb, `users/${user.uid}`), {
+      await set(ref(rtdb, `users/${user.uid}`), {
         name: fullName,
         email: email,
       });

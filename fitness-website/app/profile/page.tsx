@@ -11,7 +11,7 @@ import NutritionTracking from "@/components/nutrition-tracking";
 import ProfileSettings from "@/components/profile-settings";
 
 // Import Firebase services from firebase-config.js
-import { auth, firestore } from "@/firebase-config";
+import { auth, db } from "@/firebase-config";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function ProfilePage() {
         return;
       }
       try {
-        const docRef = doc(firestore, "users", currentUser.uid);
+        const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setUserData(docSnap.data());
