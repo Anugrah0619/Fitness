@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"; // Import router
 import { Clock, Flame, BarChart, Bookmark } from "lucide-react"
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,7 +29,6 @@ const allWorkouts = [
     ],
     youtubeUrl: "https://www.youtube.com/embed/J212vz33gU4",
   },
-
   {
     id: 2,
     title: "Core Strength Builder",
@@ -126,6 +126,8 @@ export default function WorkoutsList({
   duration,
   equipment,
 }: WorkoutsListProps) {
+  const router = useRouter(); // Initialize the router
+
   // 1. Filter by category if provided
   let workouts = category ? allWorkouts.filter((w) => w.category === category) : [...allWorkouts]
 
@@ -137,7 +139,6 @@ export default function WorkoutsList({
 
   // 3. Filter by difficulty
   if (difficulty) {
-    // Some workouts have "All Levels" as difficulty, handle that logic if needed
     if (difficulty === "Beginner") {
       workouts = workouts.filter((w) => w.difficulty === "Beginner")
     } else if (difficulty === "Intermediate") {
@@ -150,7 +151,7 @@ export default function WorkoutsList({
   // 4. Filter by duration
   if (duration) {
     workouts = workouts.filter((w) => {
-      const numericDuration = Number.parseInt(w.duration, 10) // e.g. "30 min" -> 30
+      const numericDuration = Number.parseInt(w.duration, 10)
       if (duration === "< 15 min") {
         return numericDuration < 15
       } else if (duration === "15-30 min") {
@@ -227,7 +228,9 @@ export default function WorkoutsList({
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/workouts/${workout.id}`}>View Details</Link>
               </Button>
-              <Button size="sm">Start Workout</Button>
+              <Button size="sm" onClick={() => router.push(`/workouts/LiveWorkout`)}>
+                Start Live Workout
+              </Button>
             </CardFooter>
           </Card>
         ))}
@@ -235,4 +238,3 @@ export default function WorkoutsList({
     </div>
   )
 }
-
