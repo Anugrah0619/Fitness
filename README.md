@@ -1,6 +1,7 @@
 # HealthMate: Your AI-Driven Fitness Companion 🚀
 
 HealthMate is your ultimate web-based fitness partner, crafted to offer a personalized and impactful experience for achieving a healthier lifestyle. Powered by Artificial Intelligence, we provide you with tailored fitness and nutrition solutions that go beyond the basics.
+Go explore out now - https://healthmate-fitness.vercel.app/ (Initial contribution)
 
 ## Why Choose HealthMate? 🤔
 
@@ -82,3 +83,4 @@ AI & Machine Learning:
 TensorFlow.js - In-browser ML and pose detection
 
 MediaPipe - Framework for building multimodal ML pipelines
+
